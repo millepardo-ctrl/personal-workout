@@ -20,3 +20,9 @@ export function addDays(s: string, n: number): string {
   d.setDate(d.getDate() + n)
   return toISODate(d)
 }
+
+/** Lunes de la semana (lunes–domingo) que contiene la fecha. */
+export function mondayOf(s: string): string {
+  const dow = fromISODate(s).getDay() // 0 = domingo
+  return addDays(s, -((dow + 6) % 7))
+}

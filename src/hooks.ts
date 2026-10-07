@@ -47,3 +47,25 @@ export function useToday(date: string) {
     refeedDue: isRefeedDue(settings.lastRefeed, date, settings.refeedEveryDays),
   }
 }
+
+/** Entrenamientos y registros diarios entre dos fechas (inclusive), reactivos a la base. */
+export function useRange(from: string, to: string) {
+  return useLiveQuery(
+    async () => ({
+      workouts: await db.workouts.where('date').between(from, to, true, true).toArray(),
+      days: await db.days.where('date').between(from, to, true, true).toArray(),
+    }),
+    [from, to],
+  )
+}
+
+/** Primer día que cuenta para marcar incumplimientos: inicio del plan o primer dato registrado, lo que sea antes. */
+export function useSince(): string {
+  const settings = useSettings()
+  const first = useLiveQuery(async () => {
+    const w = await db.workouts.orderBy('date').first()
+    const d = await db.days.orderBy('date').first()
+    return [w?.date, d?.date].filter((x): x is string => !!x).sort()[0]
+  }, [])
+  return first && first < settings.planStart ? first : settings.planStart
+}

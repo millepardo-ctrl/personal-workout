@@ -4,12 +4,14 @@ import Train from './features/Train'
 import Session from './features/Session'
 import Eat from './features/Eat'
 import Progress from './features/Progress'
+import History from './features/History'
 import SettingsPage from './features/SettingsPage'
 
 const tabs = [
   { to: '/', label: 'Hoy', icon: '🏠' },
   { to: '/entrenar', label: 'Entrenar', icon: '🏋️' },
   { to: '/comer', label: 'Comer', icon: '🥗' },
+  { to: '/historial', label: 'Historial', icon: '📅' },
   { to: '/progreso', label: 'Progreso', icon: '📈' },
   { to: '/ajustes', label: 'Ajustes', icon: '⚙️' },
 ]
@@ -23,6 +25,7 @@ export default function App() {
           <Route path="/entrenar" element={<Train />} />
           <Route path="/entrenar/:code" element={<Session />} />
           <Route path="/comer" element={<Eat />} />
+          <Route path="/historial" element={<History />} />
           <Route path="/progreso" element={<Progress />} />
           <Route path="/ajustes" element={<SettingsPage />} />
         </Routes>
@@ -31,7 +34,7 @@ export default function App() {
         <ul className="mx-auto flex max-w-xl">
           {tabs.map((t) => (
             <li key={t.to} className="flex-1">
-              <NavLink to={t.to} end={t.to === '/'} className={({ isActive }) => `flex min-h-14 flex-col items-center justify-center text-xs ${isActive ? 'font-bold text-brand' : 'text-ink/60'}`}>
+              <NavLink to={t.to} end={t.to === '/'} className={({ isActive }) => `flex min-h-14 flex-col items-center justify-center text-[11px] ${isActive ? 'font-bold text-brand' : 'text-ink/60'}`}>
                 <span className="text-lg" aria-hidden>{t.icon}</span>
                 {t.label}
               </NavLink>

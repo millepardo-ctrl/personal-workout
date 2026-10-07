@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom'
 import { Bar, Check } from '../components/ui'
 import { SESSIONS } from '../data/routine.seed'
 import { MENUS } from '../data/meals.seed'
-import { toISODate } from '../domain/dates'
+import { addDays, toISODate } from '../domain/dates'
+import { consumedFor } from '../domain/history'
+import { planFor } from '../domain/schedule'
+import { volume } from '../domain/training'
 import { extrasFor, isDeloadWeek, isLegDay, stairCardioForDate, weekNumber } from '../domain/schedule'
 import { sumMacros } from '../domain/nutrition'
-import { useDay, useToday } from '../hooks'
+import { useDay, useRange, useToday } from '../hooks'
 import { updateDay } from '../db/db'
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
@@ -24,6 +27,12 @@ export default function Today() {
   const session = plan === 'CARDIO' || plan === 'REST' ? undefined : SESSIONS[plan]
   const set = (patch: Parameters<typeof updateDay>[1]) => updateDay(date, patch)
   const week = weekNumber(settings.planStart, date)
+  const yesterday = addDays(date, -1)
+  const yData = useRange(yesterday, yesterday)
+  const yPlan = planFor(yesterday, settings.week)
+  const yWorkout = yData?.workouts.find((w) => w.done) ?? yData?.workouts[0]
+  const yDay = yData?.days[0]
+  const yMacros = consumedFor(yDay, yPlan)
 
   return (
     <div className="space-y-4">
@@ -40,6 +49,22 @@ export default function Today() {
           Tu último InBody es del {metric.date}. Sube uno nuevo para recalcular tus metas →
         </Link>
       )}
+
+
+      <section className="card space-y-1">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold">Ayer</h2>
+          <Link to={`/historial?d=${yesterday}`} className="text-sm font-semibold text-brand">Ver detalle</Link>
+        </div>
+        {yData && (
+          <p className="text-sm">
+            {yWorkout
+              ? `${SESSIONS[yWorkout.code].title} ${yWorkout.done ? 'terminada ✅' : 'sin terminar 🟡'} · ${Math.round(volume(yWorkout.sets))} kg de volumen`
+              : yPlan === 'CARDIO' || yPlan === 'REST' ? (yDay?.cardioMin ? `Cardio ${yDay.cardioMin} min 🪜` : yPlan === 'REST' ? 'Día de descanso' : 'No registraste cardio') : 'No registraste la sesión de ayer'}
+            {yMacros.kcal > 0 && ` · ${Math.round(yMacros.kcal)} kcal, ${Math.round(yMacros.protein)} g de proteína`}
+          </p>
+        )}
+      </section>
 
       <section className="card space-y-2">
         <h2 className="font-bold">Entrenamiento de hoy</h2>
@@ -80,6 +105,14 @@ export default function Today() {
         {extras.abs && <Check label="Abdominales (crunch + plancha)" checked={day.abs} onChange={(v) => set({ abs: v })} />}
         {extras.calves && <Check label="Pantorrilla (2 ejercicios × 4 series)" checked={day.calves} onChange={(v) => set({ calves: v })} />}
         <Check label="Creatina 5 g" checked={day.creatine} onChange={(v) => set({ creatine: v })} />
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <span>🪜 Cardio: <b>{day.cardioMin}</b> min</span>
+          <span className="flex gap-2">
+            <button className="btn-ghost" onClick={() => set({ cardioMin: day.cardioMin + 15 })}>+15</button>
+            <button className="btn-ghost" onClick={() => set({ cardioMin: day.cardioMin + 30 })}>+30</button>
+            <button className="btn-ghost" aria-label="Reiniciar cardio" onClick={() => set({ cardioMin: 0 })}>0</button>
+          </span>
+        </div>
         <div className="mt-2 flex items-center justify-between">
           <span>💧 Agua: {day.water} vasos ({(day.water * 0.25).toFixed(2)} L)</span>
           <span className="flex gap-2">

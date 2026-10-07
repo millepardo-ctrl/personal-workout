@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "images": "node scripts/fetch-exercise-images.mjs",
-    "e2e": "node tests/e2e/smoke.mjs"
+    "e2e": "node tests/e2e/smoke.mjs && node tests/e2e/history.mjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",

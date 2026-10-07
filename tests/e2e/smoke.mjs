@@ -33,7 +33,9 @@ try {
   // Comer
   await page.getByRole('link', { name: /Comer/ }).click()
   await page.getByRole('heading', { name: 'Comer' }).waitFor()
-  await page.getByRole('checkbox').first().check()
+  // el checkbox es controlado por la base (async): click y esperar a que quede marcado
+  await page.getByRole('checkbox').first().click()
+  await page.waitForFunction(() => document.querySelector('input[type=checkbox]')?.checked === true)
   await shot('04-comer')
 
   // Progreso: nueva medición
